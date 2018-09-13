@@ -1,0 +1,33 @@
+{
+	"name": "xutengx/model",
+	"description": "model",
+	"keywords": [
+		"model",
+		"xuteng",
+		"gaara"
+	],
+	"license": "MIT",
+	"type": "library",
+	"authors": [
+		{
+			"name": "xuteng",
+			"email": "68822684@qq.com"
+		}
+	],
+	"require": {
+		"php": ">=7.1.0",
+		"ext-PDO": "*",
+		"xutengx/cache": "dev-master",
+		"xutengx/contracts": "dev-master"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "^7",
+		"phpunit/php-invoker": "^2.0",
+		"phpunit/dbunit": "^4.0"
+	},
+	"autoload": {
+		"psr-4": {
+			"Xutengx\\Model\\": "src/"
+		}
+	}
+}
