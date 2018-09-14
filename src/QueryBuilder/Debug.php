@@ -58,7 +58,7 @@ trait Debug {
 	public function updateToSql(): string {
 		$this->sqlType = 'update';
 		if (empty($this->data))
-			throw new Exception('要执行UPDATE操作, 需要使用data方法设置更新的值');
+			throw new Exception('For UPDATE operation, you need to set the updated value using the method[data].');
 		$this->toSql($this->bindings);
 		return $this->lastSql;
 	}
@@ -93,7 +93,7 @@ trait Debug {
 	public function deleteToSql(): string {
 		$this->sqlType = 'delete';
 		if (empty($this->data))
-			throw new Exception('执行 DELETE 操作并没有相应的 where 约束, 请确保操作正确, 使用where(1)将强制执行.');
+			throw new Exception('For DELETE operations. Without corresponding where constraints, `where(1)` will be enforced.');
 		$this->toSql($this->bindings);
 		return $this->lastSql;
 	}

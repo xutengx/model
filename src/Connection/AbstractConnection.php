@@ -193,15 +193,16 @@ abstract class AbstractConnection {
 	 * 插入数据, 返回插入的主键
 	 * @param string $sql
 	 * @param array $pars 参数绑定数组
-	 * @return int 插入的主键
+	 * @return string 插入的主键
 	 */
-	public function insertGetId(string $sql, array $pars = []): int {
+	public function insertGetId(string $sql, array $pars = []): string {
 		$this->type = 'insert';
 		$res        = $this->prepareExecute($sql, $pars, true, $pdo)->rowCount();
+		// mysql_insert_id函数返回的是储存在有AUTO_INCREMENT约束的字段的值.
+		// 如果表中的字段不使用AUTO_INCREMENT约束，那么该函数不会返回你所存储的值，而是返回NULL或0
 		if ($res)
 			return $pdo->lastInsertId();
-		else
-			return 0;
+		throw new PDOException('Insert failed.');
 	}
 
 	/**
@@ -231,7 +232,6 @@ abstract class AbstractConnection {
 	/**
 	 * 开启事务
 	 * @return bool
-	 * @throws Exception
 	 */
 	public function begin(): bool {
 		$this->transaction = true;

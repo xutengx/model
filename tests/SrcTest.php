@@ -77,13 +77,16 @@ final class SrcTest extends TestCase {
 		$this->assertInstanceOf(Model::class, $Student = new Student);
 		$this->assertInstanceOf(Model::class, $Teacher = new Teacher);
 		$this->assertInstanceOf(Model::class, $Relationship = new RelationshipStudentTeacher);
+		$this->assertInstanceOf(Model::class, $TestModel = new TestModel);
 
 		$this->assertFalse($Student === $Teacher);
 
-		$this->assertEquals($Relationship->table, 'relationship_student_teacher');
-		$this->assertEquals($Student->table, 'student');
-		$this->assertEquals($Teacher->table, 'teacher');
+		$this->assertEquals($Relationship->getTable(), 'relationship_student_teacher');
+		$this->assertEquals($Student->getTable(), 'student');
+		$this->assertEquals($Teacher->getTable(), 'teacher');
+		$this->assertEquals($TestModel->getTable(), 'test', '无主键');
 
+		$this->insert($TestModel);
 		$this->insert($Student);
 		$this->insert($Teacher);
 		$this->insert($Relationship);
@@ -110,29 +113,56 @@ final class SrcTest extends TestCase {
 	}
 
 	protected function insert(Model $model) {
+		$table     = $model->getTable();
 		$timeStamp = time();
-		$this->assertEquals(1, $model->insert());
-		$this->assertEquals('insert into `' . $model->table . '` values()', $model->insertToSql());
-		$this->assertEquals('insert into `' . $model->table . '` values()', $model->getLastSql());
+		$this->assertEquals(1, $model->insert(), '新增全默认的一行');
+		$this->assertEquals('insert into `' . $table . '` values()', $model->insertToSql());
+		$this->assertEquals('insert into `' . $table . '` values()', $model->getLastSql());
 
 		$data = [
 			[],
 			[],
 			[]
 		];
-		$this->assertEquals('insert into `' . $model->table . '` values(),(),()', $model->value($data)->insertToSql());
-		$this->assertEquals(3, $model->value($data)->insert());
-		$this->assertEquals('insert into `' . $model->table . '` values(),(),()', $model->getLastSql());
+		$this->assertEquals('insert into `' . $table . '` values(),(),()', $model->value($data)->insertToSql());
+		$this->assertEquals(3, $model->value($data)->insert(), '2维数组新增');
+		$this->assertEquals('insert into `' . $table . '` values(),(),()', $model->getLastSql());
+
+		$data = [
+			[
+				$ct = date('Y-m-d H:i:m', $timeStamp),
+				$ut = date('Y-m-d H:i:m', $timeStamp)
+			],
+			[
+				$ct = date('Y-m-d H:i:m', $timeStamp),
+				$ut = date('Y-m-d H:i:m', $timeStamp)
+			],
+			[
+				$ct = date('Y-m-d H:i:m', $timeStamp),
+				$ut = date('Y-m-d H:i:m', $timeStamp)
+			]
+		];
+		$this->assertEquals(3, $model->newQuery()->column(['created_at', 'updated_at'])->value($data)->insert(),
+			'2维数组新增,键值分开设置');
 
 		$data = [
 			'created_at' => $ct = date('Y-m-d H:i:m', $timeStamp),
 			'updated_at' => $ut = date('Y-m-d H:i:m', $timeStamp)
 		];
-		$this->assertEquals("insert into `$model->table`(`created_at`,`updated_at`) values( '$ct' , '$ut' )",
+		$this->assertEquals("insert into `$table`(`created_at`,`updated_at`) values( '$ct' , '$ut' )",
 			$model->value($data)->insertToSql());
-		$this->assertEquals(1, $model->value($data)->insert());
-		$this->assertEquals("insert into `$model->table`(`created_at`,`updated_at`) values( '$ct' , '$ut' )",
+		$this->assertEquals(1, $model->value($data)->insert(), '1维数组新增');
+		$this->assertEquals("insert into `$table`(`created_at`,`updated_at`) values( '$ct' , '$ut' )",
 			$model->getLastSql());
+
+		try {
+			$this->assertInternalType('string', $lastInsertId = $model::value($data)->insertGetId());
+			$this->assertEquals($data['created_at'], ($model->where('id', $lastInsertId)->getRow())['created_at']);
+		} catch (RuntimeException $exception) {
+			$this->assertEquals('The method[InsertGetId] can not be properly executed without primaryKey[AUTO_INCREMENT].',
+				$exception->getMessage());
+			$this->assertEquals($table, 'test', 'test数据库是没有主键的, 会抛出此异常');
+		}
 	}
 
 }

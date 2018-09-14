@@ -8,15 +8,19 @@ use RuntimeException;
 use Xutengx\Cache\Manager as Cache;
 use Xutengx\Model\Component\QueryBuilder;
 use Xutengx\Model\Connection\AbstractConnection;
-use Xutengx\Model\Traits\{DebugTrait, ObjectRelationalMappingTrait, Transaction};
+use Xutengx\Model\Traits\{Debug, ObjectRelationalMapping, Transaction};
 
+/**
+ * Class Model
+ * @package Xutengx\Model
+ */
 abstract class Model {
 
-	use DebugTrait, ObjectRelationalMappingTrait, Transaction;
+	use Debug, ObjectRelationalMapping, Transaction;
 
 	/**
 	 * 所有数据库连接类
-	 * @var array
+	 * @var AbstractConnection[]
 	 */
 	protected static $connections;
 
@@ -46,7 +50,7 @@ abstract class Model {
 	 * 表名
 	 * @var string
 	 */
-	public $table;
+	protected $table;
 	/**
 	 * 当前model的数据库连接类
 	 * @var AbstractConnection
@@ -56,12 +60,12 @@ abstract class Model {
 	 * 主键的字段
 	 * @var string
 	 */
-	protected $primaryKey = 'id';
+	protected $primaryKey;
 	/**
 	 * 表信息
 	 * @var array
 	 */
-	protected $field = [];
+	protected $fields = [];
 	/**
 	 * 链式操作 sql
 	 * @var string
@@ -207,10 +211,10 @@ abstract class Model {
 	 * @return void
 	 */
 	protected function getTableInfo(): void {
-		$this->field = self::$cache->remember(function() {
+		$this->fields = self::$cache->remember(function() {
 			return $this->db->getAll('SHOW COLUMNS FROM `' . $this->table . '`');
 		}, 60);
-		foreach ($this->field as $v) {
+		foreach ($this->fields as $v) {
 			if ($v['extra'] === 'auto_increment') {
 				$this->primaryKey = $v['field'];
 				break;

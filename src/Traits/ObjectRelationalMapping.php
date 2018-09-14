@@ -6,10 +6,10 @@ namespace Xutengx\Model\Traits;
 use InvalidArgumentException;
 
 /**
- * Trait ObjectRelationalMappingTrait ORM
+ * Trait ObjectRelationalMapping ORM
  * @package Xutengx\Model\Traits
  */
-trait ObjectRelationalMappingTrait {
+trait ObjectRelationalMapping {
 
 	/**
 	 * orm属性集合

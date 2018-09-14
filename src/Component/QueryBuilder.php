@@ -11,7 +11,8 @@ use Xutengx\Model\QueryBuilder\{Aggregates, Column, Data, Debug, Execute, From, 
 	Order, Prepare, Select, Special, Support, Union, Value, Where};
 
 /**
- * 查询构造器
+ * Class QueryBuilder 查询构造器
+ * @package Xutengx\Model\Component
  */
 class QueryBuilder {
 
@@ -87,7 +88,7 @@ class QueryBuilder {
 	 * @param AbstractConnection $db
 	 * @param Model $model
 	 */
-	public function __construct(string $table, string $primaryKey, AbstractConnection $db, Model $model) {
+	public function __construct(string $table, ?string $primaryKey, AbstractConnection $db, Model $model) {
 		$this->table      = $table;
 		$this->primaryKey = $primaryKey;
 		$this->db         = $db;
@@ -102,12 +103,12 @@ class QueryBuilder {
 	 */
 	public function column(...$params): QueryBuilder {
 		switch (func_num_args()) {
-			case 2:
-				switch (gettype($params[1])) {
+			case 1:
+				switch (gettype($params[0])) {
 					case 'array':
-						return $this->whereInArray(...$params);
-					default :
-						return $this->whereInString(...$params);
+						return $this->columnArray(...$params);
+					case 'string':
+						return $this->columnString(...$params);
 				}
 		}
 		throw new InvalidArgumentException;

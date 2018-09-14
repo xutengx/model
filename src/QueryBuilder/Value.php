@@ -19,7 +19,7 @@ trait Value {
 		$str = '';
 		foreach ($arr as $value)
 			$str .= ',' . $this->valueFormat($value);
-		return $this->valuePush($str);
+		return $this->valuePush(ltrim($str, ','));
 	}
 
 	/**

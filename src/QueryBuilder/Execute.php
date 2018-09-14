@@ -59,16 +59,18 @@ trait Execute {
 	public function update(): int {
 		$this->sqlType = 'update';
 		if (empty($this->data))
-			throw new RuntimeException('For UPDATE operation, you need to set the updated value using the `data` method.');
+			throw new RuntimeException('For UPDATE operation, you need to set the updated value using the method[data].');
 		$sql = $this->toSql($this->bindings);
 		return $this->db->update($sql, $this->bindings);
 	}
 
 	/**
-	 * 插入数据, 返回插入的主键
-	 * @return int
+	 * 插入数据, 返回插入的键
+	 * @return string
 	 */
-	public function insertGetId(): int {
+	public function insertGetId(): string {
+		if(!$this->model->hasPrimaryKey())
+			throw new RuntimeException('The method[InsertGetId] can not be properly executed without primaryKey[AUTO_INCREMENT].');
 		$this->sqlType = 'insert';
 		$sql = $this->toSql($this->bindings);
 		return $this->db->insertGetId($sql, $this->bindings);
@@ -103,7 +105,7 @@ trait Execute {
 	public function replace(): int {
 		$this->sqlType = 'replace';
 		if (is_null($this->data))
-			throw new RuntimeException('For REPLACE operation, you need to set the value of the new or modification using the `data` method.');
+			throw new RuntimeException('For REPLACE operation, you need to set the value of the new or modification using the method[data].');
 		$sql = $this->toSql($this->bindings);
 		return $this->db->update($sql, $this->bindings);
 	}
