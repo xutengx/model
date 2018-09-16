@@ -74,10 +74,10 @@ final class SrcTest extends TestCase {
 
 		Model::addConnection('defaultConnection', $this->GetConnection());
 
+		$this->assertInstanceOf(Model::class, $TestModel = new TestModel);
 		$this->assertInstanceOf(Model::class, $Student = new Student);
 		$this->assertInstanceOf(Model::class, $Teacher = new Teacher);
 		$this->assertInstanceOf(Model::class, $Relationship = new RelationshipStudentTeacher);
-		$this->assertInstanceOf(Model::class, $TestModel = new TestModel);
 
 		$this->assertFalse($Student === $Teacher);
 

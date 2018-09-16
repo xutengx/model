@@ -213,7 +213,7 @@ abstract class Model {
 	protected function getTableInfo(): void {
 		$this->fields = self::$cache->remember(function() {
 			return $this->db->getAll('SHOW COLUMNS FROM `' . $this->table . '`');
-		}, 60);
+		});
 		foreach ($this->fields as $v) {
 			if ($v['extra'] === 'auto_increment') {
 				$this->primaryKey = $v['field'];
