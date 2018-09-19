@@ -10,12 +10,9 @@ use Xutengx\Model\Connection\Connection;
 use Xutengx\Model\Model;
 
 require_once __DIR__ . '/Models.php';
+require_once __DIR__ . '/GenericTestsDatabaseTestCase.php';
 
-final class SrcTest extends TestCase {
-
-	public function setUp() {
-
-	}
+final class SrcTest extends GenericTestsDatabaseTestCase {
 
 	/**
 	 * 实例化Redis缓存驱动
@@ -72,7 +69,7 @@ final class SrcTest extends TestCase {
 			$this->assertFalse($initConnection);
 		}
 
-		Model::addConnection('defaultConnection', $this->GetConnection());
+		Model::addConnection('defaultConnection', $this->GetConnections());
 
 		$this->assertInstanceOf(Model::class, $TestModel = new TestModel);
 		$this->assertInstanceOf(Model::class, $Student = new Student);
@@ -91,12 +88,17 @@ final class SrcTest extends TestCase {
 		$this->insert($Teacher);
 		$this->insert($Relationship);
 
+		$this->update($TestModel);
+		$this->update($Student);
+		$this->update($Teacher);
+		$this->update($Relationship);
+
 	}
 
 	/**
 	 * @return Connection
 	 */
-	protected function GetConnection() {
+	protected function GetConnections() : Connection {
 		$writeArray = [
 			[
 				'weight' => 5,
@@ -165,6 +167,26 @@ final class SrcTest extends TestCase {
 		}
 	}
 
+	public function select(Model $model) {
+		$arr = $model->newQuery()->where('sex', 1)->order('id')->limit(2)->getAll();
+		$this->assertEquals(2, count($arr));
+		$this->assertEquals(reset($arr)['sex'] , 1, '注意类型');
+		$this->assertLessThanOrEqual(reset($arr)['sex'], end($arr)['sex']);
+
+		$arr = $model->where('age','>','999')->order('id' ,'desc')->limit(1,5)->getAll();
+		$this->assertEquals(0, count($arr));
+
+		// 多行查询, index自定义索引, 参数为数组形式, 非参数绑定
+
+	}
+
+	public function update(Model $model) {
+
+	}
+
+	public function delete(Model $model) {
+
+	}
 }
 
 

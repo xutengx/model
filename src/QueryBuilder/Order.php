@@ -14,6 +14,7 @@ trait Order {
 	/**
 	 * 单个order
 	 * @param string $field
+	 * @param string $order eg:asc|desc
 	 * @return QueryBuilder
 	 */
 	public function orderString(string $field, string $order = 'asc'): QueryBuilder {
