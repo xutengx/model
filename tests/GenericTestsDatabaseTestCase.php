@@ -1,32 +1,46 @@
 <?php
 
-use PHPUnit\DbUnit\TestCaseTrait;
 use PHPUnit\Framework\TestCase;
 
 abstract class GenericTestsDatabaseTestCase extends TestCase {
-	use TestCaseTrait;
 
-	// only instantiate pdo once for test clean-up/fixture load
-	static private $pdo = null;
-
-	// only instantiate PHPUnit_Extensions_Database_DB_IDatabaseConnection once per test
-	private $conn = null;
+	protected $databases = [
+		'model_test_master_0',
+		'model_test_master_1',
+		'model_test_slave_0',
+		'model_test_slave_1',
+		'model_test_slave_2',
+		'model_test_slave_3'
+	];
 
 	/**
-	 * @return PHPUnit_Extensions_Database_DataSet_IDataSet
+	 * 初始化数据库, 数据表
 	 */
-	public function getDataSet() {
-		return $this->createFlatXMLDataSet(dirname(__FILE__) . '/ini/sql.xml');
-	}
-
-	public function getConnection() {
-		if ($this->conn === null) {
-			if (self::$pdo == null) {
-				self::$pdo = new PDO($GLOBALS['DB_DSN'], $GLOBALS['DB_USER'], $GLOBALS['DB_PASSWD']);
-			}
-			$this->conn = $this->createDefaultDBConnection(self::$pdo, $GLOBALS['DB_DBNAME']);
+	protected function setUp() {
+		foreach ($this->databases as $database) {
+			$this->createDatabase($database);
+			$this->createTable($database);
 		}
-
-		return $this->conn;
 	}
+
+	protected function createDatabase($db) {
+		$host = $GLOBALS['DB_HOST'];
+		$port = $GLOBALS['DB_PORT'];
+		$pdo  = new \PDO("mysql:host=$host;port=$port", $GLOBALS['DB_USER'], $GLOBALS['DB_PASSWD']);
+		$pdo->query("CREATE DATABASE $db");
+		$pdo = null;
+	}
+
+	protected function createTable($db) {
+		$host     = $GLOBALS['DB_HOST'];
+		$port     = $GLOBALS['DB_PORT'];
+		$pdo      = new \PDO("mysql:dbname=$db;host=$host;port=$port", $GLOBALS['DB_USER'], $GLOBALS['DB_PASSWD']);
+		$sqlFile  = dirname(__FILE__) . '/ini/test.sql';
+		$sqlArray = explode(';', file_get_contents($sqlFile));
+		foreach ($sqlArray as $sql) {
+			$pdo->query($sql);
+		}
+		$pdo = null;
+	}
+
 }

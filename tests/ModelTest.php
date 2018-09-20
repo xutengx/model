@@ -1,7 +1,6 @@
 <?php
 declare(strict_types = 1);
 
-use PHPUnit\Framework\TestCase;
 use Xutengx\Cache\Driver\{Redis};
 use Xutengx\Cache\Manager;
 use Xutengx\Contracts\Cache\Driver;
@@ -12,7 +11,7 @@ use Xutengx\Model\Model;
 require_once __DIR__ . '/Models.php';
 require_once __DIR__ . '/GenericTestsDatabaseTestCase.php';
 
-final class SrcTest extends GenericTestsDatabaseTestCase {
+final class ModelTest extends GenericTestsDatabaseTestCase {
 
 	/**
 	 * 实例化Redis缓存驱动
@@ -107,7 +106,7 @@ final class SrcTest extends GenericTestsDatabaseTestCase {
 				'port'   => 3306,
 				'user'   => 'root',
 				'pwd'    => 'root',
-				'db'     => 'test'
+				'db'     => 'model_test_master_0'
 			]
 		];
 		$this->assertInstanceOf(AbstractConnection::class, $conn = new Connection($writeArray));

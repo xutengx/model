@@ -18,12 +18,4 @@ class PersistentConnection extends AbstractConnection {
 	protected function PDO(): PDO {
 		return $this->connect();
 	}
-
-	protected function logInfo(string $sql, array $bindings = [], bool $manual = false): bool {
-		return true;
-	}
-
-	protected function logError(string $msg, string $sql, array $bindings = [], bool $manual = false): bool {
-		return true;
-	}
 }

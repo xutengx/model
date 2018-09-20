@@ -2,17 +2,14 @@
 declare(strict_types = 1);
 
 use Xutengx\Model\Connection\AbstractConnection;
-use Xutengx\Model\Connection\Connection;
+use Xutengx\Model\Connection\PersistentConnection;
 
 require_once __DIR__ . '/Models.php';
 require_once __DIR__ . '/GenericTestsDatabaseTestCase.php';
 
-final class ConnectionTest extends GenericTestsDatabaseTestCase {
+final class PersistentConnectionTest extends GenericTestsDatabaseTestCase {
 
-	/**
-	 * @return Connection
-	 */
-	public function testSimpleGetConnection(): Connection {
+	public function testSimpleGetPersistentConnection(): PersistentConnection {
 		$writeArray = [
 			[
 				'weight' => 5,
@@ -24,11 +21,11 @@ final class ConnectionTest extends GenericTestsDatabaseTestCase {
 				'db'     => 'model_test_master_0'
 			]
 		];
-		$this->assertInstanceOf(AbstractConnection::class, $conn = new Connection($writeArray));
+		$this->assertInstanceOf(AbstractConnection::class, $conn = new PersistentConnection($writeArray));
 		return $conn;
 	}
 
-	public function testGetConnection(): Connection {
+	public function testGetPersistentConnection(): PersistentConnection {
 		$writeArray = [
 			[
 				'weight' => 5,
@@ -38,20 +35,11 @@ final class ConnectionTest extends GenericTestsDatabaseTestCase {
 				'user'   => 'root',
 				'pwd'    => 'root',
 				'db'     => 'model_test_master_0'
-			],
-			[
-				'weight' => 5,
-				'type'   => 'mysql',
-				'host'   => '127.0.0.1',
-				'port'   => 3306,
-				'user'   => 'root',
-				'pwd'    => 'root',
-				'db'     => 'model_test_master_1'
 			]
 		];
 		$readyArray = [
 			[
-				'weight' => 1,
+				'weight' => 10,
 				'type'   => 'mysql',
 				'host'   => '127.0.0.1',
 				'port'   => 3306,
@@ -60,7 +48,7 @@ final class ConnectionTest extends GenericTestsDatabaseTestCase {
 				'db'     => 'model_test_slave_0'
 			],
 			[
-				'weight' => 1,
+				'weight' => 5,
 				'type'   => 'mysql',
 				'host'   => '127.0.0.1',
 				'port'   => 3306,
@@ -87,12 +75,12 @@ final class ConnectionTest extends GenericTestsDatabaseTestCase {
 				'db'     => 'model_test_slave_3'
 			]
 		];
-		$this->assertInstanceOf(AbstractConnection::class, $conn = new Connection($writeArray, $readyArray));
+		$this->assertInstanceOf(AbstractConnection::class, $conn = new PersistentConnection($writeArray, $readyArray));
 		return $conn;
 	}
 
 	public function test数据库connection读写() {
-		$conn = $this->testSimpleGetConnection();
+		$conn = $this->testSimpleGetPersistentConnection();
 		$res  = $conn->getAll('select * from student where sex=:sex', [':sex' => 1]);
 		$this->assertTrue(is_array($res));
 		$this->assertEquals(count($res), 6);
@@ -105,7 +93,7 @@ final class ConnectionTest extends GenericTestsDatabaseTestCase {
 	}
 
 	public function test数据库connection读写切换() {
-		$conn = $this->testGetConnection();
+		$conn = $this->testGetPersistentConnection();
 		$res  = $conn->getAll('select * from student where sex=:sex', [':sex' => 1]);
 		$this->assertTrue(is_array($res));
 		$this->assertEquals(count($res), 6);
@@ -118,32 +106,50 @@ final class ConnectionTest extends GenericTestsDatabaseTestCase {
 
 	}
 
-	public function test从库保持一个连接() {
-		$conn = $this->testGetConnection();
+	public function test从库保持多个重复连接() {
+		$conn = $this->testGetPersistentConnection();
 		$arr  = [];
 		for ($i = 0; $i < 1000; $i++)
 			$arr[] = $conn->getRow('select database()')['database()']; // 当前的数据库名称
-		$this->assertEquals(1, count($dbArr = array_unique($arr)));
+
+		// 分析权重
+		$weight = [];
+		foreach ($arr as $v) {
+			$weight[$v] = !isset($weight[$v]) ? 0 : $weight[$v] + 1;
+		}
+		echo <<<EOF
+连接使用权重 :
+model_test_slave_0 -> 10
+model_test_slave_1 -> 5
+model_test_slave_2 -> 1
+
+
+EOF;
+		echo <<<EOF
+实际使用次数 :
+
+EOF;
+		var_export($weight);
+
+		$this->assertEquals(3, count($dbArr = array_unique($arr)), '有极小概率不通过, 重跑通过即可');
 		$this->assertTrue(!in_array('model_test_slave_3', $dbArr), '权重测试');
 	}
 
-	public function test事务中不切换到从库(){
-		$conn = $this->testGetConnection();
+	public function test事务中不切换到从库() {
+		$conn = $this->testGetPersistentConnection();
 		$this->assertTrue($conn->begin());
-		$conn->getRow('select database()')['database()'];
 		$writeTable = $conn->getRow('select database()')['database()'];
 		$this->assertTrue(in_array($writeTable, ['model_test_master_0', 'model_test_master_1']));
 		$this->assertTrue($conn->rollBack());
 		$this->assertTrue($conn->begin());
 
-		$arr  = [];
+		$arr = [];
 		for ($i = 0; $i < 1000; $i++)
 			$arr[] = $conn->getRow('select database()')['database()']; // 当前的数据库名称
 		$this->assertEquals(1, count($dbArr = array_unique($arr)));
 		$this->assertEquals(reset($dbArr), $writeTable);
 		$conn->rollBack();
 	}
-
 }
 
 

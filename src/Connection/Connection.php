@@ -37,12 +37,4 @@ class Connection extends AbstractConnection {
 			return $this->dbWriteSingle;
 
 	}
-
-	protected function logInfo(string $sql, array $bindings = [], bool $manual = false): bool {
-		return true;
-	}
-
-	protected function logError(string $msg, string $sql, array $bindings = [], bool $manual = false): bool {
-		return true;
-	}
 }
