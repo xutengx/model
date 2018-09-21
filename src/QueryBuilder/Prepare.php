@@ -3,7 +3,7 @@
 declare(strict_types = 1);
 namespace Xutengx\Model\QueryBuilder;
 
-use Xutengx\Model\QueryPrepare;
+use Xutengx\Model\Component\QueryPrepare;
 
 /**
  * Trait Prepare
@@ -16,7 +16,7 @@ trait Prepare {
 	 * @return QueryPrepare
 	 */
 	public function selectPrepare(): QueryPrepare {
-		return $this->forPrepara('select');
+		return $this->forPrepare('select');
 	}
 
 	/**
@@ -24,7 +24,7 @@ trait Prepare {
 	 * @return QueryPrepare
 	 */
 	public function insertPrepare(): QueryPrepare {
-		return $this->forPrepara('insert');
+		return $this->forPrepare('insert');
 	}
 
 	/**
@@ -32,7 +32,7 @@ trait Prepare {
 	 * @return QueryPrepare
 	 */
 	public function updatePrepare(): QueryPrepare {
-		return $this->forPrepara('update');
+		return $this->forPrepare('update');
 	}
 
 	/**
@@ -40,7 +40,7 @@ trait Prepare {
 	 * @return QueryPrepare
 	 */
 	public function deletePrepare(): QueryPrepare {
-		return $this->forPrepara('delete');
+		return $this->forPrepare('delete');
 	}
 
 	/**
@@ -48,19 +48,19 @@ trait Prepare {
 	 * @return QueryPrepare
 	 */
 	public function replacePrepare(): QueryPrepare {
-		return $this->forPrepara('replace');
+		return $this->forPrepare('replace');
 	}
 
 	/**
 	 * 预执行sql
+	 * @param string $type
 	 * @return QueryPrepare
 	 */
-	protected function forPrepara(string $type): QueryPrepare {
+	protected function forPrepare(string $type): QueryPrepare {
 		$pars = $this->bindings;
 		$this->sqlType	 = $type;
 		$sql			 = $this->toSql($pars);
 		$PDOStatement	 = $this->db->prepare($sql, $type);
-//		var_dump($PDOStatement);exit;
 		return new QueryPrepare($PDOStatement, $pars, $this->db);
 	}
 

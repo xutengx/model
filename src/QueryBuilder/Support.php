@@ -21,13 +21,37 @@ trait Support {
 	}
 
 	/**
-	 * 生成sql
+	 * 生成sql 包含占位符
 	 * @param array $parameters 参数绑定, 在此处, 仅作记录sql作用
 	 * @return string sql
 	 */
 	public function toSql(array $parameters = []): string {
-		$sql      = '';
-		$remember = true;
+		$remember = is_null($this->sqlType) ? false : true;
+		$sql      = $this->makeSql();
+		if ($remember)
+			$this->rememberSql($sql, $parameters);
+		return $sql;
+	}
+
+	/**
+	 * 生成完成sql
+	 * @param array $parameters
+	 * @return string
+	 */
+	public function toCompleteSql(array $parameters = []): string{
+		$sql      = $this->makeSql();
+		foreach ($parameters as $k => $v) {
+			$parameters[$k] = '\'' . $v . '\'';
+		}
+		return strtr($sql, $parameters);
+	}
+
+	/**
+	 * 建立sql
+	 * @return string
+	 */
+	protected function makeSql(): string {
+		$sql = '';
 		switch ($this->sqlType) {
 			case 'select':
 				$sql = 'select ' . $this->dealSelect() . $this->dealFromSelect();
@@ -44,9 +68,6 @@ trait Support {
 			case 'delete':
 				$sql = 'delete from ' . $this->dealFrom();
 				break;
-			default :
-				$remember = false;
-				break;
 		}
 		$sql .= $this->dealJoin() . $this->dealWhere() . $this->dealGroup() . $this->dealHaving() . $this->dealOrder() .
 		        $this->dealLimit() . $this->dealLock();
@@ -57,11 +78,8 @@ trait Support {
 					$sql .= $type . $this->bracketFormat($clause);
 			}
 		}
-		if ($remember)
-			$this->rememberSql($sql, $parameters);
 		return $sql;
 	}
-
 	/**
 	 * 返回insert时,使用的字段名
 	 * @return string

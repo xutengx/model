@@ -13,6 +13,9 @@ require_once __DIR__ . '/GenericTestsDatabaseTestCase.php';
 
 final class ModelTest extends GenericTestsDatabaseTestCase {
 
+	/**
+	 * @var Model
+	 */
 	private static $model;
 
 	protected function setUp() {
@@ -95,9 +98,62 @@ final class ModelTest extends GenericTestsDatabaseTestCase {
 	}
 
 
-	public function testWhere() {
-		$this->assertInstanceOf(Model::class, $Student = new Student);
+	public function testiInsert() {
+		$model = static::$model;
+		$table     = $model->getTable();
+		$timeStamp = time();
+		$this->assertEquals(1, $model->insert(), '新增全默认的一行');
+		$this->assertEquals('insert into `' . $table . '` values()', $model->insertToSql());
+		$this->assertEquals('insert into `' . $table . '` values()', $model->getLastSql());
 
+		$data = [
+			[],
+			[],
+			[]
+		];
+		$this->assertEquals('insert into `' . $table . '` values(),(),()', $model->value($data)->insertToSql());
+		$this->assertEquals(3, $model->value($data)->insert(), '2维数组新增');
+		$this->assertEquals('insert into `' . $table . '` values(),(),()', $model->getLastSql());
+
+		$data = [
+			[
+				$ct = date('Y-m-d H:i:m', $timeStamp),
+				$ut = date('Y-m-d H:i:m', $timeStamp)
+			],
+			[
+				$ct = date('Y-m-d H:i:m', $timeStamp),
+				$ut = date('Y-m-d H:i:m', $timeStamp)
+			],
+			[
+				$ct = date('Y-m-d H:i:m', $timeStamp),
+				$ut = date('Y-m-d H:i:m', $timeStamp)
+			]
+		];
+		$this->assertEquals(3, $model->newQuery()->column(['created_at', 'updated_at'])->value($data)->insert(),
+			'2维数组新增,键值分开设置');
+
+		$data = [
+			'created_at' => $ct = date('Y-m-d H:i:m', $timeStamp),
+			'updated_at' => $ut = date('Y-m-d H:i:m', $timeStamp)
+		];
+		$this->assertEquals("insert into `$table`(`created_at`,`updated_at`) values( '$ct' , '$ut' )",
+			$model->value($data)->insertToSql());
+		$this->assertEquals(1, $model->value($data)->insert(), '1维数组新增');
+		$this->assertEquals("insert into `$table`(`created_at`,`updated_at`) values( '$ct' , '$ut' )",
+			$model->getLastSql());
+
+		try {
+			$this->assertInternalType('string', $lastInsertId = $model::value($data)->insertGetId());
+			$this->assertEquals($data['created_at'], ($model->where('id', $lastInsertId)->getRow())['created_at']);
+		} catch (RuntimeException $exception) {
+			$this->assertEquals('The method[InsertGetId] can not be properly executed without primaryKey[AUTO_INCREMENT].',
+				$exception->getMessage());
+			$this->assertEquals($table, 'test', 'test数据库是没有主键的, 会抛出此异常');
+		}
+	}
+
+	public function testWhere() {
+		$Student = static::$model;
 		$this->assertEquals($Student->select(['id', 'name', 'age'])->where('id', '3')->getRow(),
 			['id' => 3, 'name' => '小腾', 'age' => 16]);
 
@@ -156,8 +212,7 @@ final class ModelTest extends GenericTestsDatabaseTestCase {
 	}
 
 	public function test自增减() {
-		$this->assertInstanceOf(Model::class, $Student = new Student);
-
+		$Student = static::$model;
 		$this->assertEquals(1, $Student->data(['name' => ''])
 		                               ->dataIncrement('age', 1)
 		                               ->where('id<=2')
@@ -184,8 +239,7 @@ final class ModelTest extends GenericTestsDatabaseTestCase {
 	}
 
 	public function testOrWhere() {
-		$this->assertInstanceOf(Model::class, $Student = new Student);
-
+		$Student = static::$model;
 		$this->assertEquals($Student->newQuery()->select(['id', 'name', 'age'])
 		                            ->whereIn('id', ['1', 2, '3', '4'])
 		                            ->andWhere(function($queryBuilder) {
@@ -217,8 +271,8 @@ final class ModelTest extends GenericTestsDatabaseTestCase {
 
 	}
 
-
-	public function select(Model $model) {
+	public function testSelect() {
+		$model = static::$model;
 		$arr = $model->newQuery()->where('sex', 1)->order('id')->limit(2)->getAll();
 		$this->assertEquals(2, count($arr));
 		$this->assertEquals(reset($arr)['sex'], 1, '注意类型');
@@ -228,66 +282,82 @@ final class ModelTest extends GenericTestsDatabaseTestCase {
 		$this->assertEquals(0, count($arr));
 	}
 
-	public function update(Model $model) {
+	public function testHaving() {
+		$this->assertEquals(static::$model->select(['id'])
+		                                  ->whereBetween('id', ['1', '9'])
+		                                  ->havingIn('id', ['1', '3'])
+		                                  ->group('id')
+		                                  ->getAllToSql(),
+			"select `id` from `student` where `id`between '1' and '9'  group by `id` having `id`in( '1' , '3' )");
+
+		$this->assertEquals(static::$model->select(['id'])
+		                                  ->whereBetween('id', ['1', '9'])
+		                                  ->havingIn('id', ['1', '3'])
+		                                  ->group('id')
+		                                  ->getAll(), [
+			['id' => 1],
+			['id' => 3]
+		]);
+
+		$this->assertEquals(static::$model->select(['id'])
+		                                  ->whereBetween('id', ['1', '9'])
+		                                  ->havingBetween('id', ['1', '3'])
+		                                  ->group('id')
+		                                  ->getAll(), [
+			['id' => 1],
+			['id' => 2],
+			['id' => 3]
+		]);
 
 	}
 
-	public function delete(Model $model) {
-
+	public function testWhereRaw(){
+		$this->assertEquals(static::$model->newQuery()->select(['id'])
+		                                  ->whereRaw('id between 1 and 9')
+		                                  ->havingBetween('id', ['1', '3'])
+		                                  ->group('id')
+		                                  ->getAll(), [
+			['id' => 1],
+			['id' => 2],
+			['id' => 3]
+		]);
 	}
 
-	protected function insert(Model $model) {
-		$table     = $model->getTable();
-		$timeStamp = time();
-		$this->assertEquals(1, $model->insert(), '新增全默认的一行');
-		$this->assertEquals('insert into `' . $table . '` values()', $model->insertToSql());
-		$this->assertEquals('insert into `' . $table . '` values()', $model->getLastSql());
+	public function testTransaction() {
+		$this->assertFalse(static::$model->transaction(function($obj) {
+			$obj->where('id', '>=', "1")
+			    ->where('ids', '<=', "256")
+			    ->having('id', '<>', '256')
+			    ->order('id', 'desc')
+			    ->select('id')
+			    ->group('id')
+			    ->lock()
+			    ->getRow();
+		}, 3));
 
-		$data = [
-			[],
-			[],
-			[]
-		];
-		$this->assertEquals('insert into `' . $table . '` values(),(),()', $model->value($data)->insertToSql());
-		$this->assertEquals(3, $model->value($data)->insert(), '2维数组新增');
-		$this->assertEquals('insert into `' . $table . '` values(),(),()', $model->getLastSql());
-
-		$data = [
-			[
-				$ct = date('Y-m-d H:i:m', $timeStamp),
-				$ut = date('Y-m-d H:i:m', $timeStamp)
-			],
-			[
-				$ct = date('Y-m-d H:i:m', $timeStamp),
-				$ut = date('Y-m-d H:i:m', $timeStamp)
-			],
-			[
-				$ct = date('Y-m-d H:i:m', $timeStamp),
-				$ut = date('Y-m-d H:i:m', $timeStamp)
-			]
-		];
-		$this->assertEquals(3, $model->newQuery()->column(['created_at', 'updated_at'])->value($data)->insert(),
-			'2维数组新增,键值分开设置');
-
-		$data = [
-			'created_at' => $ct = date('Y-m-d H:i:m', $timeStamp),
-			'updated_at' => $ut = date('Y-m-d H:i:m', $timeStamp)
-		];
-		$this->assertEquals("insert into `$table`(`created_at`,`updated_at`) values( '$ct' , '$ut' )",
-			$model->value($data)->insertToSql());
-		$this->assertEquals(1, $model->value($data)->insert(), '1维数组新增');
-		$this->assertEquals("insert into `$table`(`created_at`,`updated_at`) values( '$ct' , '$ut' )",
-			$model->getLastSql());
-
-		try {
-			$this->assertInternalType('string', $lastInsertId = $model::value($data)->insertGetId());
-			$this->assertEquals($data['created_at'], ($model->where('id', $lastInsertId)->getRow())['created_at']);
-		} catch (RuntimeException $exception) {
-			$this->assertEquals('The method[InsertGetId] can not be properly executed without primaryKey[AUTO_INCREMENT].',
-				$exception->getMessage());
-			$this->assertEquals($table, 'test', 'test数据库是没有主键的, 会抛出此异常');
-		}
+		$this->assertTrue(static::$model->transaction(function($obj) {
+			$obj->where('id', '>=', "1")
+			    ->where('id', '<=', "256")
+			    ->having('id', '<>', '256')
+			    ->order('id', 'desc')
+			    ->select('id')
+			    ->group('id')
+			    ->lock()
+			    ->getRow();
+		}, 3));
 	}
+
+	public function testUnion() {
+		$first = static::$model->select(['id', 'name', 'age'])->whereBetween('id', '1', '4');
+
+		$res = static::$model::select(['id', 'name', 'age'])->whereBetween('id', '1', '2')->union(function($obj) {
+			$obj->select(['id', 'name', 'age'])->whereBetween('id', '2', '3');
+		})->unionAll($first->getAllToSql())->getAll();
+
+		var_dump(static::$model->getLastSql());
+		var_dump($res);exit;
+	}
+
 }
 
 

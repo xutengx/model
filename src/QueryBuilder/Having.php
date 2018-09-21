@@ -170,7 +170,7 @@ trait Having {
 	 * @return QueryBuilder
 	 */
 	public function havingInArray(string $field, array $values): QueryBuilder {
-		$sql = $this->fieldFormat($field) . 'in' . $this->bracketFormat($this->valueFormat(implode('\',\'', $values)));
+		$sql = $this->fieldFormat($field) . 'in' . $this->bracketFormat($this->valueArrayFormat($values));
 		return $this->havingPush($sql);
 	}
 
