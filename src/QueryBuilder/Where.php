@@ -135,11 +135,11 @@ trait Where {
 	 * 子查询 一句完整的sql
 	 * @param string $field
 	 * @param string $symbol
-	 * @param string $subquery
+	 * @param string $subQuery
 	 * @return QueryBuilder
 	 */
-	public function whereSubqueryRaw(string $field, string $symbol, string $subquery): QueryBuilder {
-		$sql = $this->fieldFormat($field) . $symbol . $this->bracketFormat($subquery);
+	public function whereSubQueryRaw(string $field, string $symbol, string $subQuery): QueryBuilder {
+		$sql = $this->fieldFormat($field) . $symbol . $this->bracketFormat($subQuery);
 		return $this->wherePush($sql);
 	}
 
@@ -150,9 +150,9 @@ trait Where {
 	 * @param QueryBuilder $QueryBuilder
 	 * @return QueryBuilder
 	 */
-	public function whereSubqueryQueryBuilder(string $field, string $symbol, QueryBuilder $QueryBuilder): QueryBuilder {
+	public function whereSubQueryQueryBuilder(string $field, string $symbol, QueryBuilder $QueryBuilder): QueryBuilder {
 		$sql = $QueryBuilder->getAllToSql();
-		return $this->whereSubqueryRaw($field, $symbol, $sql);
+		return $this->whereSubQueryRaw($field, $symbol, $sql);
 	}
 
 	/**
@@ -162,7 +162,7 @@ trait Where {
 	 * @param Closure $callback
 	 * @return QueryBuilder
 	 */
-	public function whereSubqueryClosure(string $field, string $symbol, Closure $callback): QueryBuilder {
+	public function whereSubQueryClosure(string $field, string $symbol, Closure $callback): QueryBuilder {
 		$res = $callback($QueryBuilder = $this->getSelf());
 		// 调用方未调用return
 		if (is_null($res)) {
@@ -175,7 +175,7 @@ trait Where {
 		// 调用正常
 		else
 			$sql = $res;
-		return $this->whereSubqueryRaw($field, $symbol, $sql);
+		return $this->whereSubQueryRaw($field, $symbol, $sql);
 	}
 
 	/**
@@ -245,7 +245,7 @@ trait Where {
 	 * @return QueryBuilder
 	 */
 	public function whereInArray(string $field, array $values): QueryBuilder {
-		$sql = $this->fieldFormat($field) . 'in' . $this->bracketFormat($this->valueFormat(implode('\',\'', $values)));
+		$sql = $this->fieldFormat($field) . 'in' . $this->bracketFormat($this->valueArrayFormat($values));
 		return $this->wherePush($sql);
 	}
 

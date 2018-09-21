@@ -254,20 +254,20 @@ class QueryBuilder {
 	 * @param mixed ...$params
 	 * @return QueryBuilder
 	 */
-	public function whereSubquery(...$params): QueryBuilder {
+	public function whereSubQuery(...$params): QueryBuilder {
 		switch (func_num_args()) {
 			case 3:
 				switch (gettype($obj = end($params))) {
 					case 'object':
-						if ($obj instanceof \Closure) {
-							return $this->whereSubqueryClosure(...$params);
+						if ($obj instanceof Closure) {
+							return $this->whereSubQueryClosure(...$params);
 						}
 						elseif ($obj instanceof QueryBuilder) {
-							return $this->whereSubqueryQueryBuilder(...$params);
+							return $this->whereSubQueryQueryBuilder(...$params);
 						}
 						throw new InvalidArgumentException;
 					case 'string':
-						return $this->whereSubqueryRaw(...$params);
+						return $this->whereSubQueryRaw(...$params);
 				}
 		}
 		throw new InvalidArgumentException;

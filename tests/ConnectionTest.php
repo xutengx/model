@@ -144,6 +144,22 @@ final class ConnectionTest extends GenericTestsDatabaseTestCase {
 		$conn->rollBack();
 	}
 
+	public function test参数绑定(){
+		$conn = $this->testGetConnection();
+		$sql = "select `id`,`name`,`age` from `student` where `id`in( :11,:12,:13 ) and (`id`= :14  or (`id`= :15  and `id`is not null))";
+		$res  = $conn->getAll($sql, [
+			':11' => '2',
+			':12' => '3',
+			':13' => '4',
+			':14' => '2',
+			':15' => '3',
+		]);
+		$this->assertEquals($res, [
+			['id' => 2, 'name' => '小张', 'age' => 11],
+			['id' => 3, 'name' => '小腾', 'age' => 16]
+		]);
+	}
+
 }
 
 

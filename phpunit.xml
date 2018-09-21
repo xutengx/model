@@ -5,5 +5,11 @@
         <var name="DB_PORT" value="3306" />
         <var name="DB_USER" value="root" />
         <var name="DB_PASSWD" value="root" />
+
+
+        <var name="REDIS_HOST" value="127.0.0.1" />
+        <var name="REDIS_PORT" value="6379" />
+        <var name="REDIS_DATABASE" value="5" />
+        <var name="REDIS_PASSWD" value="" />
     </php>
 </phpunit>

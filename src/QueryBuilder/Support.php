@@ -12,6 +12,15 @@ use Xutengx\Model\Component\QueryBuilder;
 trait Support {
 
 	/**
+	 * 值加上括号
+	 * @param string $value 字段 eg:1765595948
+	 * @return string   eg:(1765595948)
+	 */
+	protected static function bracketFormat(string $value): string {
+		return '(' . $value . ')';
+	}
+
+	/**
 	 * 生成sql
 	 * @param array $parameters 参数绑定, 在此处, 仅作记录sql作用
 	 * @return string sql
@@ -27,7 +36,6 @@ trait Support {
 				$sql = 'update ' . $this->dealFrom() . ' set' . $this->dealData();
 				break;
 			case 'insert':
-//				$sql = 'insert into ' . $this->dealFrom() . ' set' . $this->dealData();
 				$sql = 'insert into ' . $this->dealFrom() . $this->dealColumn() . ' values' . $this->dealValue();
 				break;
 			case 'replace':
@@ -177,15 +185,6 @@ trait Support {
 	}
 
 	/**
-	 * 值加上括号
-	 * @param string $value 字段 eg:1765595948
-	 * @return string   eg:(1765595948)
-	 */
-	protected static function bracketFormat(string $value): string {
-		return '(' . $value . ')';
-	}
-
-	/**
 	 * 记录最近次的sql, 完成参数绑定的填充
 	 * 重载此方法可用作sql日志
 	 * @param string $sql 拼接完成的sql
@@ -266,6 +265,19 @@ trait Support {
 		$key                  = ':' . (string)self::$bindingCounter++;
 		$this->bindings[$key] = $value;
 		return ' ' . $key . ' ';
+	}
+
+	/**
+	 * 将值转化为`绑定参数键`
+	 * @param array $valueArray
+	 * @return string
+	 */
+	protected function valueArrayFormat(array $valueArray): string {
+		$str = '';
+		foreach ($valueArray as $value) {
+			$str .= $this->valueFormat((string)$value) . ',';
+		}
+		return rtrim($str, ',');
 	}
 
 }
