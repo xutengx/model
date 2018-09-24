@@ -97,8 +97,7 @@ final class ModelTest extends GenericTestsDatabaseTestCase {
 		return $Student;
 	}
 
-
-	public function testiInsert() {
+	public function testInsert() {
 		$model = static::$model;
 		$table     = $model->getTable();
 		$timeStamp = time();
@@ -333,7 +332,7 @@ final class ModelTest extends GenericTestsDatabaseTestCase {
 			    ->group('id')
 			    ->lock()
 			    ->getRow();
-		}, 3));
+		}, 2));
 
 		$this->assertTrue(static::$model->transaction(function($obj) {
 			$obj->where('id', '>=', "1")
@@ -344,18 +343,27 @@ final class ModelTest extends GenericTestsDatabaseTestCase {
 			    ->group('id')
 			    ->lock()
 			    ->getRow();
-		}, 3));
+		}, 2));
 	}
 
 	public function testUnion() {
 		$first = static::$model->select(['id', 'name', 'age'])->whereBetween('id', '1', '4');
+		$res   = static::$model::select(['id', 'name', 'age'])->whereBetween('id', '1', '2')->union(function($obj) {
+				$obj->select(['id', 'name', 'age'])->whereBetween('id', '2', '3');
+			})->unionAll($first->getAllToSql())->getAll();
 
-		$res = static::$model::select(['id', 'name', 'age'])->whereBetween('id', '1', '2')->union(function($obj) {
-			$obj->select(['id', 'name', 'age'])->whereBetween('id', '2', '3');
-		})->unionAll($first->getAllToSql())->getAll();
+		$this->assertEquals(static::$model->getLastSql(),
+			"(select `id`,`name`,`age` from `student` where `id`between '1' and '2' )union(select `id`,`name`,`age` from `student` where `id`between '2' and '3' )union all(select `id`,`name`,`age` from `student` where `id`between '1' and '4' )");
 
-		var_dump(static::$model->getLastSql());
-		var_dump($res);exit;
+		$this->assertEquals($res, [
+			['id'=>1, 'name'=>'小明', 'age'=>6],
+			['id'=>2, 'name'=>'小张', 'age'=>11],
+			['id'=>3, 'name'=>'小腾', 'age'=>16],
+			['id'=>1, 'name'=>'小明', 'age'=>6],
+			['id'=>2, 'name'=>'小张', 'age'=>11],
+			['id'=>3, 'name'=>'小腾', 'age'=>16],
+			['id'=>4, 'name'=>'小云', 'age'=>11],
+		]);
 	}
 
 }

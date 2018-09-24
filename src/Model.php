@@ -8,7 +8,7 @@ use RuntimeException;
 use Xutengx\Cache\Manager as Cache;
 use Xutengx\Model\Component\QueryBuilder;
 use Xutengx\Model\Connection\AbstractConnection;
-use Xutengx\Model\Traits\{Debug, ObjectRelationalMapping, Transaction};
+use Xutengx\Model\Traits\{Attribute, ObjectRelationalMapping, Transaction};
 
 /**
  * Class Model
@@ -16,7 +16,7 @@ use Xutengx\Model\Traits\{Debug, ObjectRelationalMapping, Transaction};
  */
 abstract class Model {
 
-	use Debug, ObjectRelationalMapping, Transaction;
+	use Attribute, ObjectRelationalMapping, Transaction;
 
 	/**
 	 * 所有数据库连接类
@@ -122,7 +122,7 @@ abstract class Model {
 	 * @return mixed
 	 */
 	public static function __callStatic(string $method, array $parameters = []) {
-		return (new static)->newQuery()->$method(...$parameters);
+		return (new static)->$method(...$parameters);
 	}
 
 	/**
