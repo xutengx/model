@@ -26,6 +26,18 @@ CREATE TABLE `student` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='学生表';
 SQL;
+
+	public function registerMethodForQueryBuilder(): array {
+		return [
+			'ID_is_bigger_than_2' => function(\Xutengx\Model\Component\QueryBuilder $queryBuilder): \Xutengx\Model\Component\QueryBuilder {
+				return $queryBuilder->where('id', '>', '2');
+			},
+			'ID_rule'             => function(\Xutengx\Model\Component\QueryBuilder $queryBuilder,
+				$id = 5): \Xutengx\Model\Component\QueryBuilder {
+				return $queryBuilder->ID_is_bigger_than_2()->where('id', '<', $id);
+			},
+		];
+	}
 }
 
 class Teacher extends RelationshipStudentTeacher {

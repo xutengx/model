@@ -57,11 +57,11 @@ trait Prepare {
 	 * @return QueryPrepare
 	 */
 	protected function forPrepare(string $type): QueryPrepare {
-		$pars = $this->bindings;
-		$this->sqlType	 = $type;
-		$sql			 = $this->toSql($pars);
-		$PDOStatement	 = $this->db->prepare($sql, $type);
-		return new QueryPrepare($PDOStatement, $pars, $this->db);
+		$pars          = $this->bindings;
+		$this->sqlType = $type;
+		$sql           = $this->toSql($pars);
+		$PDOStatement  = $this->db->prepare($sql, $type);
+		return new QueryPrepare($PDOStatement, $this->db, $pars);
 	}
 
 }
