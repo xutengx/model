@@ -21,7 +21,7 @@ trait Log {
 			'masterSlave'    => $this->masterSlave,
 			'type'           => $this->type,
 			'transaction'    => $this->transaction,
-			'single'         => $this->single,
+			'conn'           => static::class,
 			'identification' => $this->identification
 		]);
 	}
@@ -43,7 +43,7 @@ trait Log {
 			'masterSlave'    => $this->masterSlave,
 			'type'           => $this->type,
 			'transaction'    => $this->transaction,
-			'single'         => $this->single,
+			'conn'           => static::class,
 			'identification' => $this->identification
 		]);
 	}
