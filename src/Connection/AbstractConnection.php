@@ -99,8 +99,9 @@ abstract class AbstractConnection {
 			$this->masterSlave = true;
 			$this->confFormat($readConnectionInfo, $this->dbReadWeight, $this->dbRead);
 		}
-		$this->pdoAttr = $pdoAttr;
-		$this->initSql = $initSql;
+		$this->pdoAttr        = $pdoAttr;
+		$this->initSql        = $initSql;
+		$this->identification = uniqid((string)getmypid(), true);
 	}
 
 	/**
