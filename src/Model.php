@@ -113,6 +113,7 @@ abstract class Model {
 	 */
 	public static function addConnection(string $connectionName, AbstractConnection $connection) {
 		self::$connections[$connectionName] = $connection;
+		$connection->connection = $connectionName;
 	}
 
 	/**

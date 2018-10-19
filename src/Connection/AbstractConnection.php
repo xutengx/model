@@ -15,6 +15,11 @@ abstract class AbstractConnection {
 	use Execute, Transaction;
 
 	/**
+	 * 数据库链接名称, 当抛出异常时帮助定位数据库链接
+	 * @var string
+	 */
+	public $connection;
+	/**
 	 * 当前进程标识
 	 * @var string
 	 */
@@ -24,11 +29,6 @@ abstract class AbstractConnection {
 	 * @var bool
 	 */
 	protected $masterSlave = false;
-	/**
-	 * 数据库链接名称, 当抛出异常时帮助定位数据库链接
-	 * @var string
-	 */
-	protected $connection;
 	/**
 	 * 数据库 读 连接集合
 	 * @var array
@@ -113,7 +113,7 @@ abstract class AbstractConnection {
 		foreach ($theConf as $v) {
 			$key         = md5(serialize($v));
 			$theDb[$key] = $v;
-			if($v['weight'] === 0 )
+			if ($v['weight'] === 0)
 				break;
 			if (empty($theDbWeight))
 				$theDbWeight[$v['weight']] = $key;
