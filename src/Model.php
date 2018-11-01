@@ -216,7 +216,7 @@ abstract class Model {
 			return $this->db->getAll('SHOW COLUMNS FROM `' . $this->table . '`');
 		});
 		foreach ($this->fields as $v) {
-			if ($v['extra'] === 'auto_increment') {
+			if ($v['key'] === 'PRI') {
 				$this->primaryKey = $v['field'];
 				break;
 			}
