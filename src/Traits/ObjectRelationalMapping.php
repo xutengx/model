@@ -52,7 +52,7 @@ trait ObjectRelationalMapping {
 	 */
 	public function create(): int {
 		$param = [];
-		foreach ($this->field as $v) {
+		foreach ($this->fields as $v) {
 			if (array_key_exists($v['field'], $this->orm)) {
 				$param[$v['field']] = $this->orm[$v['field']];
 			}
