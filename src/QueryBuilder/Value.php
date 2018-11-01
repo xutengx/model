@@ -30,7 +30,7 @@ trait Value {
 		$str = '';
 		foreach ($arr as $column => $value) {
 			$this->columnString((string)$column);
-			$str .= ',' . $this->valueFormat($value);
+			$str .= ',' . $this->valueFormat((string)$value);
 		}
 		return $this->valuePush(ltrim($str, ','));
 	}
