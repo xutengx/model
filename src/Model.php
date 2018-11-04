@@ -100,7 +100,7 @@ abstract class Model {
 	 * @param Cache $cache
 	 * @param string $defaultConnection
 	 */
-	public static function init(Cache $cache, string $defaultConnection) {
+	public static function init(Cache $cache, string $defaultConnection = 'default') {
 		self::$cache              = $cache;
 		self::$defaultConnection  = $defaultConnection;
 		self::$alreadyInitialized = true;
