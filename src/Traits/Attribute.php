@@ -54,9 +54,9 @@ trait Attribute {
 	}
 
 	/**
-	 * @return string
+	 * @return array
 	 */
-	public function getFields(): string {
+	public function getFields(): array {
 		return $this->fields;
 	}
 
