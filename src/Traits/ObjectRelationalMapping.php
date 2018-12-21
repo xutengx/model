@@ -44,21 +44,23 @@ trait ObjectRelationalMapping {
 		}
 		elseif (is_null($key))
 			throw new InvalidArgumentException('model ORM save without the key');
-		return $this->data($param)->where($this->primaryKey, $key)->update();
+		return $this->newQuery()->data($param)->where($this->primaryKey, $key)->update();
 	}
 
 	/**
 	 * orm属性新增
-	 * @return int 受影响的行数
+	 * @param bool $insertGetId 返回上次插入的id
+	 * @return int 受影响的行数or上次插入的id
 	 */
-	public function create(): int {
+	public function create(bool $insertGetId = false): int {
 		$param = [];
 		foreach ($this->fields as $v) {
 			if (array_key_exists($v['field'], $this->orm)) {
 				$param[$v['field']] = $this->orm[$v['field']];
 			}
 		}
-		return $this->data($param)->insert();
+		return $insertGetId ? $this->newQuery()->value($param)->insertGetId() :
+			$this->newQuery()->value($param)->insert();
 	}
 
 }

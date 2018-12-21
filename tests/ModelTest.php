@@ -63,7 +63,7 @@ final class ModelTest extends GenericTestsDatabaseTestCase {
 			$model->getLastSql());
 
 		try {
-			$this->assertInternalType('string', $lastInsertId = $model::value($data)->insertGetId());
+			$this->assertInternalType('int', $lastInsertId = $model::value($data)->insertGetId());
 			$this->assertEquals($data['created_at'], ($model->where('id', $lastInsertId)->getRow())['created_at']);
 		} catch (RuntimeException $exception) {
 			$this->assertEquals('The method[InsertGetId] can not be properly executed without primaryKey[AUTO_INCREMENT].',

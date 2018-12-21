@@ -115,6 +115,7 @@ class QueryBuilder {
 	}
 
 	/**
+	 * 插入数据
 	 * @param array $arr
 	 * @return QueryBuilder
 	 */

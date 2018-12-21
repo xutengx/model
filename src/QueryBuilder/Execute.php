@@ -66,9 +66,9 @@ trait Execute {
 
 	/**
 	 * 插入数据, 返回插入的键
-	 * @return string
+	 * @return int
 	 */
-	public function insertGetId(): string {
+	public function insertGetId(): int {
 		if(!$this->model->hasPrimaryKey())
 			throw new RuntimeException('The method[InsertGetId] can not be properly executed without primaryKey[AUTO_INCREMENT].');
 		$this->sqlType = 'insert';
