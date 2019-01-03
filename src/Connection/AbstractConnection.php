@@ -171,7 +171,7 @@ abstract class AbstractConnection {
 		if (!is_object($theDb[$key])) {
 			$settings    = $theDb[$key];
 			$theDb[$key] = $this->newPdo($settings['type'], $settings['db'], $settings['host'],
-				(string)$settings['port'], $settings['user'], $settings['pwd']);
+				(string)$settings['port'], $settings['user'], (string)$settings['pwd']);
 		}
 		return $theDb[$key];
 	}
